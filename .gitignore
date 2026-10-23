@@ -1,15 +1,22 @@
-# Images — shared separately, not in repo
-*.png
-*.jpg
-*.jpeg
-
-# Python
+# Byte-compiled / optimized / DLL files
 __pycache__/
-*.pyc
-.venv/
-.env
+*.py[cod]
+*$py.class
 
-# Credentials — never commit
-cos-creds.txt
-*.pem
-embed-agent*.json
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db

@@ -1,0 +1,59 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# ── Bob substitutes these placeholders before applying ────────────────────────
+namespace: STUDENT_NAMESPACE_PLACEHOLDER
+
+resources:
+- ../../base
+
+patches:
+# 1. Inject the student-specific inference URL into backend ConfigMap
+- target:
+    kind: ConfigMap
+    name: backend-config
+  patch: |-
+    - op: add
+      path: /data/INFERENCE_URL
+      value: INFERENCE_URL_PLACEHOLDER
+
+# 2. Patch backend Deployment env vars to use the student-specific secret name
+#    (Bob replaces STUDENT_SECRET_NAME_PLACEHOLDER with e.g. student03-data-connection)
+- target:
+    kind: Deployment
+    name: backend
+  patch: |-
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: backend
+    spec:
+      template:
+        spec:
+          containers:
+          - name: backend
+            env:
+            - name: AWS_S3_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: STUDENT_SECRET_NAME_PLACEHOLDER
+                  key: AWS_S3_ENDPOINT
+                  optional: true
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: STUDENT_SECRET_NAME_PLACEHOLDER
+                  key: AWS_ACCESS_KEY_ID
+                  optional: true
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: STUDENT_SECRET_NAME_PLACEHOLDER
+                  key: AWS_SECRET_ACCESS_KEY
+                  optional: true
+            - name: AWS_S3_BUCKET
+              valueFrom:
+                secretKeyRef:
+                  name: STUDENT_SECRET_NAME_PLACEHOLDER
+                  key: AWS_S3_BUCKET
+                  optional: true

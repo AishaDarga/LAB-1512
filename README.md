@@ -1,41 +1,30 @@
-# LAB-1203 — Student Material
+# LAB-1512 Student Material
+## Manufacturing Defect Inspection with OpenShift AI + IBM Bob
 
-**Build a Management Report Agent on watsonx Orchestrate and embed it in Planning Analytics**
+Share this folder with students.
 
-This repository contains everything you need to complete the lab hands-on exercises.
+| Item | What it is |
+|------|-----------|
+| [`LAB-1512-GUIDE.docx`](LAB-1512-GUIDE.docx) | The step-by-step lab guide (Steps 1–12). Start here. |
+| [`LAB-1512_Presentation.pdf`](LAB-1512_Presentation.pdf) | Presentation deck for the lab introduction and overview. |
+| [`How_to_Access_Bob_and_Cluster.md`](How_to_Access_Bob_and_Cluster.md) | How to open Bob on the lab desktop, plus the OpenShift cluster login details. |
+| [`Troubleshooting_Reference.md`](Troubleshooting_Reference.md) | Fixes for common errors. Ask Bob first; use this for detailed steps. |
+| [`lab-materials/`](lab-materials/) | Notebooks, sample PCB images, model weights and app manifests. |
 
----
+## About `lab-materials/`
 
-## Contents
+This is a copy of the lab Git repository (`https://github.com/faheemshai/1512_model_training.git`).
+Students do **not** need to copy these files by hand. In Step 4 of the guide they clone the repository
+into their workbench:
 
-| Path | Description |
-|---|---|
-| `LAB-1203-GUIDE.md` | Step-by-step lab guide (Markdown) |
-| `LAB-1203-GUIDE.pdf` | Same guide as a PDF for offline reading |
-| `agents/management_report_generator.agent.yaml` | watsonx Orchestrate agent definition — import this via the ADK |
-| `tools/publish_report_pdf.py` | Python tool that builds and uploads the PDF report to Cloud Object Storage |
-| `tools/requirements.txt` | Python dependencies for the tool (`reportlab`, `boto3`) |
+```
+git clone https://github.com/faheemshai/1512_model_training.git ~/lab-materials
+```
 
----
+The local copy is for reference, or for sharing if students cannot reach GitHub.
 
-## Lab structure
+## Before the lab
 
-| Part | What you do |
-|---|---|
-| **Part 0** | Prerequisites and security rules |
-| **Part 1** | Set up the ADK and log in to wxO |
-| **Part 2** | Connect the PA MCP server to wxO |
-| **Part 3** | Build the agent (data and analysis only) |
-| **Part 4** | Test the agent (data only) |
-| **Part 5** | Run `orchestrate connections set-credentials` with the values your instructor gives you — this stores them inside wxO so the report tool can upload PDFs |
-| **Part 6** | Build the report tool and add it to the agent |
-| **Part 7** | Test the full report flow |
-| **Part 8** | Embed the agent in the PA workspace |
-| **Part 9** | Troubleshooting |
-| **Part 10** | Clean-up |
-
-Start with **`LAB-1203-GUIDE.md`** and follow the parts in order.
-
-> **Shared COS bucket:** The instructor has already created the Cloud Object Storage bucket and HMAC credentials. In Part 5 you do **not** create a bucket — you only store the five values your instructor hands out into a local wxO connection (`cos_reports`). Every student writes to the same bucket; file names include a timestamp and random ID so they never overwrite each other.
-
-> **No credentials in this repo:** COS keys, private keys, and environment-specific IDs are never committed here. Your instructor will supply them verbally or via a shared channel during the lab.
+Give each student:
+- their student ID (`student01`, `student02`, ...)
+- the desktop password for their TechZone reservation, if it isn't visible to them

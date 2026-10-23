@@ -1,0 +1,128 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+data:
+  DB_HOST:      "postgresql"
+  DB_PORT:      "5432"
+  DB_NAME:      "imagelab"
+  MODEL_NAME:   "defect-classifier"
+  IMG_SIZE:     "96"
+  CLASSES:      "contamination,crack,pass,scratch"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  labels:
+    app: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+      - name: backend
+        image: python:3.11-slim
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          # OpenShift runs containers as a random non-root UID.
+          # Set HOME=/tmp so pip --user install works, then add install dir to PATH.
+          export HOME=/tmp
+          export PATH=/tmp/.local/bin:${PATH}
+          pip install --user --no-cache-dir \
+            fastapi uvicorn psycopg2-binary boto3 requests \
+            pillow numpy python-multipart -q
+          # main.py is supplied by the backend-app-code ConfigMap mounted at /app.
+          # When deploying via Bob prompts the code is embedded directly in the command
+          # (no volume needed). When deploying via kustomize, apply backend-code-configmap.yaml
+          # first so this volume mount resolves correctly.
+          /tmp/.local/bin/uvicorn main:app \
+            --host 0.0.0.0 --port 8000 --app-dir /app
+        ports:
+        - containerPort: 8000
+        envFrom:
+        - configMapRef:
+            name: backend-config
+        - secretRef:
+            name: postgresql-secret
+        env:
+        - name: HOME
+          value: /tmp
+        - name: AWS_S3_ENDPOINT
+          valueFrom:
+            secretKeyRef:
+              name: STUDENT_SECRET_PLACEHOLDER
+              key: AWS_S3_ENDPOINT
+              optional: true
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: STUDENT_SECRET_PLACEHOLDER
+              key: AWS_ACCESS_KEY_ID
+              optional: true
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: STUDENT_SECRET_PLACEHOLDER
+              key: AWS_SECRET_ACCESS_KEY
+              optional: true
+        - name: AWS_S3_BUCKET
+          valueFrom:
+            secretKeyRef:
+              name: STUDENT_SECRET_PLACEHOLDER
+              key: AWS_S3_BUCKET
+              optional: true
+        volumeMounts:
+        - name: app-code
+          mountPath: /app
+        resources:
+          requests:
+            cpu: 250m
+            memory: 512Mi
+          limits:
+            cpu: "2"
+            memory: 2Gi
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          # Backend installs packages at startup — takes ~90s on first run
+          initialDelaySeconds: 90
+          periodSeconds: 10
+          failureThreshold: 12
+      volumes:
+      - name: app-code
+        configMap:
+          name: backend-app-code
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+spec:
+  selector:
+    app: backend
+  ports:
+  - port: 8000
+    targetPort: 8000
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: backend
+spec:
+  to:
+    kind: Service
+    name: backend
+  port:
+    targetPort: 8000
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
